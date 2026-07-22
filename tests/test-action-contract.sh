@@ -61,11 +61,12 @@ grep -Fq 'lipo -create' "$repo_root/.github/workflows/build.yml"
 build_workflow="$repo_root/.github/workflows/build.yml"
 grep -Fq 'publish-release:' "$build_workflow"
 grep -Fq 'type: boolean' "$build_workflow"
-grep -Fq "if: github.event_name == 'workflow_dispatch' && inputs.publish-release" \
+grep -Fq "if: github.event_name == 'workflow_dispatch' && inputs.publish-release && github.ref == 'refs/heads/main'" \
   "$build_workflow"
 grep -Fq 'needs: package' "$build_workflow"
 grep -Fq 'contents: write' "$build_workflow"
 grep -Fq 'name: wget2-macos-universal' "$build_workflow"
+grep -Fq '(cd dist && sha256sum --check SHA256SUMS)' "$build_workflow"
 grep -Fq 'release_tag="wget2-$WGET2_VERSION_DEFAULT-openssl-$OPENSSL_VERSION_DEFAULT-zlib-$ZLIB_VERSION_DEFAULT"' \
   "$build_workflow"
 grep -Fq 'gh release upload "$release_tag" dist/wget2 dist/SHA256SUMS --clobber' \

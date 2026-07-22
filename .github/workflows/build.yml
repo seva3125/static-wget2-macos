@@ -103,7 +103,7 @@ jobs:
   release:
     name: Publish tested release
     needs: package
-    if: github.event_name == 'workflow_dispatch' && inputs.publish-release
+    if: github.event_name == 'workflow_dispatch' && inputs.publish-release && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -118,6 +118,9 @@ jobs:
         with:
           name: wget2-macos-universal
           path: dist
+
+      - name: Verify downloaded artifact checksum
+        run: (cd dist && sha256sum --check SHA256SUMS)
 
       - name: Create or refresh latest release
         env:
