@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      publish-release:
+        description: Replace the public latest release after all tests pass
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -93,3 +99,48 @@ jobs:
             dist/SHA256SUMS
           if-no-files-found: error
           retention-days: 14
+
+  release:
+    name: Publish tested release
+    needs: package
+    if: github.event_name == 'workflow_dispatch' && inputs.publish-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download tested universal artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: wget2-macos-universal
+          path: dist
+
+      - name: Create or refresh latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source versions.env
+          release_tag="wget2-$WGET2_VERSION_DEFAULT-openssl-$OPENSSL_VERSION_DEFAULT-zlib-$ZLIB_VERSION_DEFAULT"
+          release_title="wget2 $WGET2_VERSION_DEFAULT for macOS"
+          release_notes="Universal macOS wget2 binary built from wget2 $WGET2_VERSION_DEFAULT, OpenSSL $OPENSSL_VERSION_DEFAULT, and zlib $ZLIB_VERSION_DEFAULT. Includes arm64 and x86_64 slices and requires macOS 13.0 or newer."
+
+          if gh release view "$release_tag" >/dev/null 2>&1; then
+            gh release upload "$release_tag" dist/wget2 dist/SHA256SUMS --clobber
+            gh release edit "$release_tag" \
+              --title "$release_title" \
+              --notes "$release_notes" \
+              --latest
+          else
+            gh release create "$release_tag" \
+              'dist/wget2#Universal macOS wget2 binary (arm64 + x86_64)' \
+              'dist/SHA256SUMS#SHA-256 checksum' \
+              --target "$GITHUB_SHA" \
+              --title "$release_title" \
+              --notes "$release_notes" \
+              --latest
+          fi
