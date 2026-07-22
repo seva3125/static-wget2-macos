@@ -34,6 +34,7 @@ assert_system_linkage() {
   local binary="$1"
   local dependency
   local invalid=0
+  local line
   local linkage_output
 
   if ! lipo "$binary" -archs >/dev/null 2>&1; then
@@ -47,7 +48,9 @@ assert_system_linkage() {
     return 1
   fi
 
-  while read -r dependency _; do
+  while IFS= read -r line; do
+    [[ "$line" == *: ]] && continue
+    read -r dependency _ <<<"$line"
     [[ -n "$dependency" ]] || continue
     case "$dependency" in
       /usr/lib/*|/System/Library/*)
@@ -57,7 +60,7 @@ assert_system_linkage() {
         invalid=1
         ;;
     esac
-  done < <(tail -n +2 <<<"$linkage_output")
+  done <<<"$linkage_output"
 
   return "$invalid"
 }
