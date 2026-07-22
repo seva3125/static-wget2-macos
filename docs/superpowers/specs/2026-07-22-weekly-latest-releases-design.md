@@ -36,7 +36,7 @@ For each release it validates the tag prefix, finds the exact expected `.tar.gz`
 
 `build.yml` accepts a boolean `publish-release` workflow-dispatch input. Existing push and pull-request builds continue to compile and test without publishing.
 
-After both native builds and universal packaging pass, a guarded release job downloads the tested universal artifact. It creates or updates release tag `v<wget2-version>`, uploads `wget2` and `SHA256SUMS` with replacement enabled, and marks the release as latest. Thus `/releases/latest/download/wget2` changes only after successful tests.
+After both native builds and universal packaging pass, a guarded release job downloads the tested universal artifact. It creates or updates a provenance-bearing release tag such as `wget2-2.2.1-openssl-4.0.1-zlib-1.3.2`, uploads `wget2` and `SHA256SUMS` with replacement enabled, and marks the release as latest. Thus `/releases/latest/download/wget2` changes only after successful tests, while the release tag records every source version used.
 
 ## Data flow
 
@@ -53,7 +53,7 @@ After both native builds and universal packaging pass, a guarded release job dow
 - Build failures prevent packaging and release publication.
 - Packaging or checksum failures prevent release publication.
 - Ordinary pushes and pull requests never modify releases.
-- An existing release is updated in place; a new wget2 version creates a new latest release.
+- An existing release for the same three-version tuple is updated in place; any wget2 or dependency version change creates a new latest release.
 
 ## Verification
 
