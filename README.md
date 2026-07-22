@@ -29,14 +29,14 @@ Inputs:
 | --- | --- | --- |
 | `output` | `dist/wget2` | Native executable destination |
 | `deployment-target` | `13.0` | Minimum macOS deployment target |
-| `wget2-version` | `2.2.1` | wget2 source version |
-| `wget2-sha256` | Pinned | wget2 archive digest |
-| `openssl-version` | `3.5.7` | OpenSSL source version |
-| `openssl-sha256` | Pinned | OpenSSL archive digest |
-| `zlib-version` | `1.3.2` | zlib source version |
-| `zlib-sha256` | Pinned | zlib archive digest |
+| `wget2-version` | Tracked latest | wget2 source version |
+| `wget2-sha256` | Tracked digest | wget2 archive digest |
+| `openssl-version` | Tracked latest | OpenSSL source version |
+| `openssl-sha256` | Tracked digest | OpenSSL archive digest |
+| `zlib-version` | Tracked latest | zlib source version |
+| `zlib-sha256` | Tracked digest | zlib archive digest |
 
-When changing a version, also supply the matching SHA-256 digest. The build fails closed when any digest differs.
+Empty version and digest inputs use the values in [`versions.env`](versions.env). A weekly workflow updates that manifest from each official project's latest non-prerelease GitHub Release and records GitHub's SHA-256 asset digest. Explicit inputs override the manifest; when overriding a version, also supply its matching digest. Every archive is verified before extraction.
 
 ## Download the tested universal binary
 
@@ -51,6 +51,12 @@ shasum -a 256 -c SHA256SUMS
 ```
 
 The release binary is produced and tested by the repository's [Build static wget2 workflow](https://github.com/seva3125/static-wget2-macos/actions/workflows/build.yml). Per-run workflow artifacts remain available separately for 14 days.
+
+## Automatic weekly updates
+
+The [weekly updater](.github/workflows/weekly.yml) runs every Monday at 04:17 UTC. It resolves the latest stable wget2, OpenSSL, and zlib releases, commits changed version pins, and dispatches the complete native and universal build even when the pins are unchanged. The public `latest` release assets are replaced only after both architecture builds and every packaging test pass.
+
+Release tags record all source versions, for example `wget2-2.2.1-openssl-4.0.1-zlib-1.3.2`. The stable `curl` URL remains `/releases/latest/download/wget2` across version changes.
 
 ## What “static” means on macOS
 
@@ -84,6 +90,6 @@ Set `KEEP_BUILD_DIR=1` to retain the temporary source and build trees for invest
 
 ## Versions and provenance
 
-The defaults are wget2 2.2.1, OpenSSL 3.5.7, and zlib 1.3.2. Their source archives come from the upstream GitHub releases over HTTPS and are verified against the SHA-256 values committed in `action.yml`.
+The currently tracked releases are wget2 2.2.1, OpenSSL 4.0.1, and zlib 1.3.2. Their source archives come from official upstream GitHub Releases over HTTPS and are verified against the SHA-256 values committed in `versions.env`.
 
 The Action's shell and workflow glue is MIT licensed. The produced executable contains upstream software under its own terms, notably wget2 under GPL-3.0-or-later; OpenSSL and zlib retain their upstream licenses. Distributing a generated binary requires compliance with those licenses, including the corresponding-source obligations of the GPL.
