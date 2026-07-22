@@ -40,22 +40,17 @@ When changing a version, also supply the matching SHA-256 digest. The build fail
 
 ## Download the tested universal binary
 
-Open the latest successful [Build static wget2 run](https://github.com/seva3125/static-wget2-macos/actions/workflows/build.yml), then download the `wget2-macos-universal` artifact. It contains:
-
-```text
-wget2
-SHA256SUMS
-```
-
-After extracting it:
+Release assets are public and do not require GitHub authentication. Download and verify the latest universal binary with `curl`:
 
 ```bash
+curl -fL -o wget2 https://github.com/seva3125/static-wget2-macos/releases/latest/download/wget2
+curl -fL -o SHA256SUMS https://github.com/seva3125/static-wget2-macos/releases/latest/download/SHA256SUMS
 chmod +x wget2
 shasum -a 256 -c SHA256SUMS
 ./wget2 --version
 ```
 
-GitHub requires authentication to download workflow artifacts and retains this repository's artifacts for 14 days.
+The release binary is produced and tested by the repository's [Build static wget2 workflow](https://github.com/seva3125/static-wget2-macos/actions/workflows/build.yml). Per-run workflow artifacts remain available separately for 14 days.
 
 ## What “static” means on macOS
 
