@@ -1,0 +1,12 @@
+{
+  "tag_name": "v2.2.1",
+  "draft": false,
+  "prerelease": false,
+  "assets": [
+    {
+      "name": "wget2-2.2.1.tar.gz",
+      "browser_download_url": "https://github.com/rockdaboot/wget2/releases/download/v2.2.1/wget2-2.2.1.tar.gz",
+      "digest": "sha256:d7544b13e37f18e601244fce5f5f40688ac1d6ab9541e0fbb01a32ee1fb447b4"
+    }
+  ]
+}
