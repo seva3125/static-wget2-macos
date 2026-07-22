@@ -1,0 +1,57 @@
+name: Build static wget2 for macOS
+description: Build a single-file wget2 executable with static third-party libraries on macOS
+author: seva3125
+
+inputs:
+  output:
+    description: Output path for the native wget2 executable
+    required: false
+    default: dist/wget2
+  deployment-target:
+    description: Minimum macOS deployment target
+    required: false
+    default: "13.0"
+  wget2-version:
+    description: wget2 source version
+    required: false
+    default: "2.2.1"
+  wget2-sha256:
+    description: SHA-256 of the wget2 source archive
+    required: false
+    default: d7544b13e37f18e601244fce5f5f40688ac1d6ab9541e0fbb01a32ee1fb447b4
+  openssl-version:
+    description: OpenSSL source version
+    required: false
+    default: "3.5.7"
+  openssl-sha256:
+    description: SHA-256 of the OpenSSL source archive
+    required: false
+    default: a8c0d28a529ca480f9f36cf5792e2cd21984552a3c8e4aa11a24aa31aeac98e8
+  zlib-version:
+    description: zlib source version
+    required: false
+    default: "1.3.2"
+  zlib-sha256:
+    description: SHA-256 of the zlib source archive
+    required: false
+    default: bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16
+
+runs:
+  using: composite
+  steps:
+    - name: Compile wget2 and its static dependencies
+      shell: bash
+      env:
+        WGET2_VERSION: ${{ inputs.wget2-version }}
+        WGET2_SHA256: ${{ inputs.wget2-sha256 }}
+        OPENSSL_VERSION: ${{ inputs.openssl-version }}
+        OPENSSL_SHA256: ${{ inputs.openssl-sha256 }}
+        ZLIB_VERSION: ${{ inputs.zlib-version }}
+        ZLIB_SHA256: ${{ inputs.zlib-sha256 }}
+        MACOSX_DEPLOYMENT_TARGET: ${{ inputs.deployment-target }}
+        STATIC_WGET2_OUTPUT: ${{ inputs.output }}
+      run: '"${{ github.action_path }}/scripts/build.sh" "$STATIC_WGET2_OUTPUT"'
+
+branding:
+  icon: download-cloud
+  color: blue
