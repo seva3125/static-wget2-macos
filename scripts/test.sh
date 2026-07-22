@@ -4,6 +4,8 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$script_dir/lib.sh"
+# shellcheck source=../versions.env
+source "$script_dir/../versions.env"
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 /path/to/wget2" >&2
@@ -24,7 +26,7 @@ fi
 assert_architecture "$binary" "$(uname -m)"
 assert_system_linkage "$binary"
 
-expected_version="${WGET2_VERSION:-2.2.1}"
+expected_version="${WGET2_VERSION:-$WGET2_VERSION_DEFAULT}"
 version_output="$("$binary" --version)"
 grep -Fq "GNU Wget2 $expected_version" <<<"$version_output"
 grep -Eiq 'openssl' <<<"$version_output"

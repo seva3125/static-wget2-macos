@@ -4,6 +4,8 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 source "$script_dir/lib.sh"
+# shellcheck source=../versions.env
+source "$script_dir/../versions.env"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "This Action builds wget2 on macOS only." >&2
@@ -16,12 +18,12 @@ case "$output" in
   *) output="$PWD/$output" ;;
 esac
 
-wget2_version="${WGET2_VERSION:-2.2.1}"
-wget2_sha256="${WGET2_SHA256:-d7544b13e37f18e601244fce5f5f40688ac1d6ab9541e0fbb01a32ee1fb447b4}"
-openssl_version="${OPENSSL_VERSION:-3.5.7}"
-openssl_sha256="${OPENSSL_SHA256:-a8c0d28a529ca480f9f36cf5792e2cd21984552a3c8e4aa11a24aa31aeac98e8}"
-zlib_version="${ZLIB_VERSION:-1.3.2}"
-zlib_sha256="${ZLIB_SHA256:-bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16}"
+wget2_version="${WGET2_VERSION:-$WGET2_VERSION_DEFAULT}"
+wget2_sha256="${WGET2_SHA256:-$WGET2_SHA256_DEFAULT}"
+openssl_version="${OPENSSL_VERSION:-$OPENSSL_VERSION_DEFAULT}"
+openssl_sha256="${OPENSSL_SHA256:-$OPENSSL_SHA256_DEFAULT}"
+zlib_version="${ZLIB_VERSION:-$ZLIB_VERSION_DEFAULT}"
+zlib_sha256="${ZLIB_SHA256:-$ZLIB_SHA256_DEFAULT}"
 deployment_target="${MACOSX_DEPLOYMENT_TARGET:-13.0}"
 
 arch="$(uname -m)"
