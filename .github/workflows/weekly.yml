@@ -1,0 +1,46 @@
+name: Update latest releases weekly
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: weekly-latest-releases
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Resolve latest releases and dispatch build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Resolve current upstream releases
+        id: versions
+        run: scripts/update-versions.sh
+
+      - name: Commit changed version pins
+        if: steps.versions.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add versions.env
+          git commit -m 'chore: update source versions'
+          git push origin HEAD:main
+
+      - name: Dispatch tested universal build
+        run: gh workflow run build.yml --ref main -f publish-release=true

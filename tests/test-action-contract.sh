@@ -9,6 +9,7 @@ required_files=(
   scripts/build.sh
   scripts/test.sh
   .github/workflows/build.yml
+  .github/workflows/weekly.yml
 )
 
 for relative_path in "${required_files[@]}"; do
@@ -57,6 +58,23 @@ grep -Fq 'macos-15' "$repo_root/.github/workflows/build.yml"
 grep -Fq 'macos-15-intel' "$repo_root/.github/workflows/build.yml"
 grep -Fq 'lipo -create' "$repo_root/.github/workflows/build.yml"
 
+weekly_workflow="$repo_root/.github/workflows/weekly.yml"
+grep -Fq 'cron: "17 4 * * 1"' "$weekly_workflow"
+grep -Fq 'workflow_dispatch:' "$weekly_workflow"
+grep -Fq 'contents: write' "$weekly_workflow"
+grep -Fq 'actions: write' "$weekly_workflow"
+grep -Fq 'scripts/update-versions.sh' "$weekly_workflow"
+grep -Fq 'git add versions.env' "$weekly_workflow"
+grep -Fq 'github-actions[bot]' "$weekly_workflow"
+grep -Fq 'git push origin HEAD:main' "$weekly_workflow"
+grep -Fq 'gh workflow run build.yml --ref main -f publish-release=true' \
+  "$weekly_workflow"
+
+if grep -Eq 'git add (-A|--all|\.)' "$weekly_workflow"; then
+  echo "FAIL: weekly updater must stage only versions.env" >&2
+  exit 1
+fi
+
 if grep -Eq '^(OPENSSL_LIBS|ZLIB_LIBS)=.*lib(ssl|crypto|z)\.a' "$repo_root/scripts/build.sh"; then
   echo "FAIL: direct dependency archives break wget2 libtool linking on macOS" >&2
   exit 1
@@ -65,7 +83,7 @@ grep -Fq 'OPENSSL_LIBS="-L$prefix/lib -lssl -lcrypto' "$repo_root/scripts/build.
 grep -Fq 'ZLIB_LIBS="-L$prefix/lib -lz"' "$repo_root/scripts/build.sh"
 
 if grep -Eq 'uses: actions/(checkout|upload-artifact|download-artifact)@v[0-9]' \
-  "$repo_root/.github/workflows/build.yml"; then
+  "$repo_root/.github/workflows/build.yml" "$weekly_workflow"; then
   echo "FAIL: first-party Actions must be pinned to immutable commits" >&2
   exit 1
 fi
